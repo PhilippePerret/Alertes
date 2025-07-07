@@ -22,11 +22,16 @@ class AlertesOrganiserTest < Test::Unit::TestCase
     Alertes::Alerte.new(minidata)
   end
 
+  def is_the_one(sor, ale, sor_index, ale_index)
+    assert(sor[sor_index].id == ale[ale_index].id, "L’élément #{sor_index} de la liste finale devrait avoir pour identifiant #{ale[ale_index].id}, mais il vaut #{sor[sor_index].id}…".rouge)
+  end
+
   # "La méthode Alertes.organiser"
 
   test "existe" do
     assert Alertes.respond_to?(:organiser)
   end
+
   test "attend une liste d'alertes" do
     assert_raise ArgumentError do
       Alertes.organiser
@@ -40,16 +45,17 @@ class AlertesOrganiserTest < Test::Unit::TestCase
   end
 
   test "traite une liste sans échéance" do
-    alertes = [
+    ale = [
       new_alerte("Première", 120, nil),
       new_alerte("Deuxième", 60, nil),
       new_alerte("Troisième", 30, nil)
     ]
-    alertes_sorted = Alertes.organiser(alertes, {interactive: false})
+    sor = Alertes.organiser(ale, {interactive: false})
 
-    assert( alertes_sorted[0] == alertes[0])
-    assert( alertes_sorted[1] == alertes[1])
-    assert( alertes_sorted[2] == alertes[2])
+    is_the_one(sor, ale, 0, 0)
+    is_the_one(sor, ale, 1, 1)
+    is_the_one(sor, ale, 2, 2)
+
   end
 
   test "retire les tâches des jours précédents" do
@@ -57,10 +63,10 @@ class AlertesOrganiserTest < Test::Unit::TestCase
       new_alerte("Échéance trop vieille", 30, in_(-1, :day)),
       new_alerte("Tâche du jour", 60, nil)
     ]
-    sor = Alertes.organiser(alertes, {interactive: false})
+    sor = Alertes.organiser(ale, {interactive: false})
 
-    assert(sor.count == 1)
-    assert(sor[0].id == ale[1])
+    assert(sor.count == 1, "Il ne devrait rester qu'une tâche, il en reste #{sor.count}".rouge)
+    is_the_one(sor, ale, 0, 1)
   end
 
   test "retire les tâches des jours suivants" do
@@ -70,24 +76,25 @@ class AlertesOrganiserTest < Test::Unit::TestCase
       new_alerte("Autre tâche future", 30, in_(1, :day)),
       new_alerte("Autre tâche du jour", 60, nil)
     ]
-    sor = Alertes.organiser(alertes, {interactive: false})
+    sor = Alertes.organiser(ale, {interactive: false})
 
-    assert(sor.count == 2)
-    assert(sor[0].id == ale[1])
-    assert(sor[1].id == ale[4])
+    assert(sor.count == 2, "Il ne devrait rester que 2 tâches, il en reste #{sor.count}".rouge)
+    is_the_one(sor, ale, 0, 1)
+    is_the_one(sor, ale, 1, 3)
   end
 
+
   test "traite une liste avec bonnes échéances" do
-    alertes = [
+    ale = [
       new_alerte("Échéance de fin", 30, in_(4, :hour)),
       new_alerte("Échéance ensuite", 30, in_(1, :hour)),
       new_alerte("Échéance première", 30, in_(30, :minute))
     ]
-    sorted = Alertes.organiser(alertes, {interactive: false})
+    sor = Alertes.organiser(ale, {interactive: false})
 
-    assert( alertes[0] == sorted[2])
-    assert( alertes[1] == sorted[1])
-    assert( alertes[2] == sorted[0])
+    is_the_one(sor, ale, 0, 2)
+    is_the_one(sor, ale, 1, 1)
+    is_the_one(sor, ale, 2, 0)
 
   end
 
@@ -105,9 +112,9 @@ class AlertesOrganiserTest < Test::Unit::TestCase
     # puts "SOR = #{sor}"
 
     assert sor.count == 3
-    assert sor[0].id == ale[1].id
-    assert sor[1].id == ale[2].id
-    assert sor[2].id == ale[0].id
+    is_the_one(sor, ale, 0, 1)
+    is_the_one(sor, ale, 1, 2)
+    is_the_one(sor, ale, 2, 0)
   end
 
   test "sans échéance mise à la fin si durée trop longue" do
@@ -119,9 +126,9 @@ class AlertesOrganiserTest < Test::Unit::TestCase
     sor = Alertes.organiser(ale, {interactive: false})
 
     assert sor.count == 3
-    assert sor[0].id == ale[2].id
-    assert sor[1].id == ale[0].id
-    assert sor[2].id == ale[1].id
+    is_the_one(sor, ale, 0, 2)
+    is_the_one(sor, ale, 1, 0)
+    is_the_one(sor, ale, 2, 1)
   end
 
   test "découpe tâche sans échéance si paramètre le permet" do
@@ -135,10 +142,10 @@ class AlertesOrganiserTest < Test::Unit::TestCase
 
     assert(sor.count == 4)
 
-    assert( sor[0].id == ale[2].id)
+    is_the_one(sor, ale, 0, 2)
     assert( sor[1].id == "#{ale[1].id}.2")
-    assert( sor[2].id == ale[0].id)
-    assert( sor[3].id == ale[1].id)
+    is_the_one(sor, ale, 2, 0)
+    is_the_one(sor, ale, 3, 1)
     assert( sor[1].duration == 15, "La durée devrait être de 15, elle vaut #{sor[1].duration}")
     assert( sor[3].duration == 105, "La durée devrait être de 105, elle vaut #{sor[3].duration}")
 

@@ -11,14 +11,24 @@ class << self
     alertes.is_a?(Array) && alertes[0].is_a?(Alertes::Alerte) || begin
       raise(ArgumentError, "On doit transmettre à Alertes::organiser une liste d'alertes.")
     end
+    # On prépare les échéances.
+    # Noter qu'un met un ID même aux tâches qu'on va retirer tout
+    # simplement pour faciliter les tests
+    alertes = 
+      alertes
+      .each.with_index { |a, i| a.id = i }
+      .select { |a| a.headline.nil? || a.today? }
+
     # On commence par les classer par échéances
     # Les tâches sans échéances sont retirées
     sans_echeances = 
       alertes
-        .each.with_index { |a, i| a.id = i}
-        .select { |a| a.headline.nil? }
-        .sort_by { |a| a.duration }
-        .reverse
+      .select { |a| a.headline.nil? }
+    
+    sans_echeances_sorted =
+      sans_echeances
+      .sort_by { |a| a.duration }
+      .reverse
 
     avec_echeances = 
     alertes
@@ -42,7 +52,7 @@ class << self
         curr = avec_echeances[i]
         laps = ((curr.headline.as_time - prev.deadline_time) / 60).round
         # puts "laps: #{laps.inspect}"
-        sanseches = Marshal.load(Marshal.dump(sans_echeances))
+        sanseches = Marshal.load(Marshal.dump(sans_echeances_sorted))
         bonneeche = nil
         if laps > 0
           # On cherche une étape qu'on peut glisser là
@@ -74,6 +84,7 @@ class << self
           avec_echeances = avec_echeances.insert(i, bonneeche)
           # puts "avec_echeances: #{avec_echeances}"
           sans_echeances.delete_if { |a| a.id == bonneeche.id }
+          sans_echeances_sorted.delete_if { |a| a.id == bonneeche.id }
           # puts "sans_echeances: #{sans_echeances}"
         end
       end

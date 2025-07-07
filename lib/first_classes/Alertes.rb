@@ -34,9 +34,11 @@ class << self
 
   def jouer_alertes(alertes)
     @all_alertes = 
-      Alertes.ask_for_organiser(Marshal.load(Marshal.dump(alertes))
-      .map{|data| Alerte.new(data)})
-    
+      Marshal.load(Marshal.dump(alertes))
+      .map{|data| Alerte.new(data)}
+    if @all_alertes.count > 1
+      @all_alertes = organiser(@all_alertes)
+    end
 
     jouer_next_alerte()
   end

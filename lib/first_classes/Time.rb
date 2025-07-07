@@ -3,6 +3,14 @@ class Time
 TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 
 class << self
+
+  def start_of_today
+    @start_of_today ||= Time.new(now.year, now.month, now.day, 0, 0, 0)
+  end
+  def end_of_today
+    @end_of_today ||= Time.new(now.year, now.month, now.day, 23, 59, 59)
+  end
+
 end #/class << self
 end
 class Integer
@@ -43,8 +51,12 @@ class String
   REG_TIME1 = /(\d{4})\/(\d{2})\/(\d{2}) (\d{2})\:(\d{2})\:(\d{2})/.freeze
   REG_TIME2 = /(\d{4})\-(\d{2})\-(\d{2}) (\d{2})\:(\d{2})\:(\d{2})/.freeze
 
+  def is_time?
+    self.match?(REG_TIME1) || self.match?(REG_TIME2)
+  end
+
   def as_time
-    self.match?(REG_TIME1) || self.match?(REG_TIME2) || begin
+    self.is_time? || begin
       raise "Temps #{self} mal défini. Il faut 'AAAA-MM-JJ HH:MM:SS'"
     end
     temps = if self.match?(REG_TIME1)

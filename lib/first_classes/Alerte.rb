@@ -78,7 +78,7 @@ class Alertes::Alerte
   attr_accessor :id
 
   attr_reader :data
-  attr_reader :content, :headline, :folder, :script
+  attr_reader :content, :folder, :script
   def duration
     if deadline?
       ((deadline.as_time - Time.now).round / 60).round
@@ -96,7 +96,6 @@ class Alertes::Alerte
     @data = data
     @duration = data[:duration]
     @content  = data[:content]
-    @headline = data[:headline]
     @folder   = data[:folder]
     @script   = data[:script]
   end
@@ -106,6 +105,29 @@ class Alertes::Alerte
     self.class.run(self)
   end
   def deadline?; !@deadline.nil? end
+  
+  # @return True si l'alerte est du jour
+  def today?
+    headline_time >= Time.start_of_today && headline_time <= Time.end_of_today
+  end
+
+  def headline_time
+    @headline_time ||= headline && headline.as_time
+  end
+  def headline
+    @headline ||= begin
+      hd = data[:headline]
+      if hd.nil?
+        nil
+      elsif hd.is_time?
+        hd
+      else
+        # Il peut n'y avoir que l'heure
+        n = Time.now
+        "#{n.year}-#{n.month}-#{n.day} #{hd}" 
+      end
+    end
+  end
 
   def deadline_time
     @deadline_time ||= deadline.as_time
@@ -116,7 +138,7 @@ class Alertes::Alerte
       if data[:deadline]
         data[:deadline]
       elsif data[:headline] && duration
-        (data[:headline].as_time + duration * 60).strftime(Time::TIME_FORMAT)
+        (headline.as_time + duration * 60).strftime(Time::TIME_FORMAT)
       end
     end
   end
