@@ -33,12 +33,16 @@ class << self
   end
 
   def jouer_alertes(alertes)
-    @all_alertes = Marshal.load(Marshal.dump(alertes))
+    @all_alertes = 
+      Alertes.ask_for_organiser(Marshal.load(Marshal.dump(alertes))
+      .map{|data| Alerte.new(data)})
+    
+
     jouer_next_alerte()
   end
   def jouer_next_alerte
-    dalerte = @all_alertes.shift || return # fin
-    Alerte.new(dalerte).run
+    alerte = @all_alertes.shift || return # fin
+    alerte.run
   end
 
   def lancer_alertes_programmed

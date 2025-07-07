@@ -8,7 +8,10 @@ GEM
     json (2.12.2)
     pastel (0.8.0)
       tty-color (~> 0.5)
+    power_assert (2.0.5)
     ruby2d (0.12.1)
+    test-unit (3.7.0)
+      power_assert
     tty-color (0.6.0)
     tty-cursor (0.7.1)
     tty-prompt (0.23.1)
@@ -29,6 +32,7 @@ DEPENDENCIES
   clir (= 0.24.2)
   date (= 3.4.1)
   ruby2d (= 0.12.1)
+  test-unit
   yaml (= 0.4.0)
 
 BUNDLED WITH

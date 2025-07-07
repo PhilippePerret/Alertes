@@ -74,7 +74,11 @@ class Alertes::Alerte
   end #/class << self  
   # === I N S T A N C E ===
 
-  attr_reader :content, :deadline, :folder, :script
+  # ID défini par certaines fonctions
+  attr_accessor :id
+
+  attr_reader :data
+  attr_reader :content, :headline, :folder, :script
   def duration
     if deadline?
       ((deadline.as_time - Time.now).round / 60).round
@@ -82,11 +86,17 @@ class Alertes::Alerte
       @duration
     end
   end
+  def duration=(value)
+    @duration = value
+    data[:duration] = value
+    @deadline = nil # pour recalcul
+  end
 
   def initialize(data)
+    @data = data
     @duration = data[:duration]
     @content  = data[:content]
-    @deadline = data[:deadline]
+    @headline = data[:headline]
     @folder   = data[:folder]
     @script   = data[:script]
   end
@@ -99,6 +109,16 @@ class Alertes::Alerte
 
   def deadline_time
     @deadline_time ||= deadline.as_time
+  end
+
+  def deadline
+    @deadline ||= begin
+      if data[:deadline]
+        data[:deadline]
+      elsif data[:headline] && duration
+        (data[:headline].as_time + duration * 60).strftime(Time::TIME_FORMAT)
+      end
+    end
   end
 
   # Pour recalculer la durée restante de travail après une pause
@@ -125,7 +145,7 @@ class Alertes::Alerte
       return "Aucun script n'est stipulé."
     elsif File.exist?(script)
       return "Je dois appendre à jouer le script #{script}"
-      return true
+      # return true
     else
       return "Le script #{script.inspect} est introuvable…"
     end

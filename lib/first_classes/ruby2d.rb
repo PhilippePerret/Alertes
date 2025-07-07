@@ -116,8 +116,6 @@ class Ruby2DClass
         end
       when 'p', 'P' then 
         ask("Vous voulez revenir à la précédente ? (return/esc)")
-      when 'n', 'N' then 
-        ask("Vous voulez passer à la suivante ? (return/esc)")
       else puts "Vous avez pressé la touche #{ev.key}"
       end
     end
@@ -126,7 +124,7 @@ class Ruby2DClass
 
     window.show
 
-   end #/open
+  end #/open
 
   def run(alerte)
 

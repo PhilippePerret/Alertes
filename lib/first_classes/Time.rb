@@ -1,4 +1,7 @@
 class Time
+
+TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
+
 class << self
 end #/class << self
 end
