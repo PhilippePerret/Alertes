@@ -49,8 +49,8 @@ class Alertes::Alerte
       if params[:headline]
         case Q.select("Tâche ponctuelle ou répétée ?".jaune, [{name: "Ponctuelle (un jour précis)", value: :ponct}, {name: "Répétée", value: :reccur}])
         when :reccur
-          hheadline = Q.ask("À quelle heure ? (horloge H:MM:SS ou H,MM,SS)".jaune)
-          headline = hheadline.to_full_horloge
+          hheadline = Q.ask("À quelle heure ? (horloge H:MM ou H,MM)".jaune)
+          headline = hheadline.to_full_horloge(no_seconde: true)
         when :ponct
           hheadline = Q.ask("Date et heure de début de l’alerte (p.e. 12 10:30 : ".jaune)
           headline = hheadline.fill_in_as_time

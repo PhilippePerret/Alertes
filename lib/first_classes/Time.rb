@@ -30,8 +30,13 @@ class Integer
 end
 class String
 
-  def to_full_horloge
-    secondes, minutes, heures = self.split(/[,\:]/).map{|s|s.strip.to_i}.reverse
+  def to_full_horloge(no_seconde: false)
+    if :no_seconde
+      secondes = 0
+      minutes, heures = self.split(/[,\:]/).map{|s|s.strip.to_i}.reverse
+    else
+      secondes, minutes, heures = self.split(/[,\:]/).map{|s|s.strip.to_i}.reverse
+    end
     minutes ||= 0
     heures  ||= 0
     "#{heures}:#{minutes.to_s.rjust(2,'0')}:#{secondes.to_s.rjust(2,'0')}"

@@ -1,9 +1,13 @@
 ---
-- :content: Première qui dure 2 minutes.
-  :duration: 2
+- :content: Travailler sur les tests du site de Lecture de Qualité.
+  :duration: 90
   :deadline:
-  :headline: '2025-07-08 16:00:00'
-- :content: Une récurrente à 10 heures 30.
-  :duration: 3
+  :headline: '9:00:00'
+- :content: Travailler sur le Grand Dictionnaire du Scénario.
+  :duration: 90
   :deadline:
-  :headline: '00:10:30'
+  :headline: '7:00:00'
+- :content: Sport
+  :duration: 60
+  :deadline:
+  :headline: '11:00:00'
