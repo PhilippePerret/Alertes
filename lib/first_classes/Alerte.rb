@@ -27,21 +27,30 @@ class Alertes::Alerte
       alerte.run
     end
 
-    def define_data_alerte
-      content = duration = deadline = nil
+    def define_data_alerte(params = {})
+      clear 
+      puts "Définition d'une nouvelle alerte\n".bleu
+      
+      content = duration = deadline = headline = nil
       content = Q.ask("Texte de l'alerte".jaune)
+
+      # Pour des données complètes
+      if params[:headline]
+        hheadline = Q.ask("Date et heure de début de l’alerte".jaune)
+        headline = hheadline.fill_in_as_time
+      end
+
       case Q.select("Que veux-tu programmer ?".jaune, [{name: "La durée du travail", value: :duration}, {name: "L’échéance de travail", value: :deadline}])
       when :duration
-        hduration = Q.ask("Durée en minutes (horloge possible)".jaune)
+        hduration = Q.ask("Durée en minutes (horloge H:MM possible)".jaune)
         duration = hduration.to_minutes
-        puts "duration = #{duration.inspect}"
       when :deadline
         hdeadline = Q.ask("Heure d’échéance (H:MM)".jaune)
         deadline = hdeadline.fill_in_as_time
-        puts "deadline = #{deadline.inspect}"
       end
 
-      {content: content, duration: duration, deadline: deadline}
+
+      {content: content, duration: duration, deadline: deadline, headline: headline}
     end
 
   end #/class << self  

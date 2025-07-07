@@ -4,6 +4,7 @@ GEM
     clir (0.24.2)
       json
       tty-prompt
+    date (3.4.1)
     json (2.12.2)
     pastel (0.8.0)
       tty-color (~> 0.5)
@@ -26,6 +27,7 @@ PLATFORMS
 
 DEPENDENCIES
   clir (= 0.24.2)
+  date (= 3.4.1)
   ruby2d (= 0.12.1)
   yaml (= 0.4.0)
 

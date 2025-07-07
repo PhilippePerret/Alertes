@@ -128,7 +128,7 @@ class Ruby2DClass
       if @countdown % 5 == 0
         bcompteur.text = @countdown.to_horloge
       end
-      if @countdown < 0 && @countdown > 10
+      if @countdown < 0 && @countdown > -10
         set_fond(Ruby2D::Color.new([1,0,0,1]), 'white')
       elsif @countdown <= 60
         set_fond('orange', 'white')

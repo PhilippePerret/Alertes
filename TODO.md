@@ -2,8 +2,7 @@
 
 ## Réflexion sur le fonctionnement
 
-Quand on arrive, choix entre :
+Il y a deux différentes données à étudier : 
 
-  - utiliser le fichier existe s'il existe
-  - définir un fichier (liste d'alertes) 
-  - faire une utilisation ponctuelle de l'application
+Les tâches qui n'ont qu'une durée : elles peuvent s'enchainer normalement
+Les tâches qui ont un headline : elles doivent commencer le moment venu

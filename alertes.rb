@@ -2,6 +2,7 @@
 
 
 begin
+  APP_FOLDER = __dir__
   require_relative 'lib/required'
   Alertes.run
 rescue Exception => e

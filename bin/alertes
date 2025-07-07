@@ -1,12 +1,12 @@
 #!/usr/bin/env zsh
 
 # Pour obtenir le dossier de l'application
-APP_FOLDER="$(dirname "$(dirname "$(readlink -f "${BASH_SOURCE[0]:-$0}")")")"
+app_folder="$(dirname "$(dirname "$(readlink -f "${BASH_SOURCE[0]:-$0}")")")"
 
 # DIR="$(cd "$(dirname "$0")" && pwd)"
 # APP_FOLDER="$(cd "$(dirname "$0")/.." && pwd)"
 # echo $APP_FOLDER
 
-cd $APP_FOLDER
+cd $app_folder
 bundle exec ruby alertes.rb
 
