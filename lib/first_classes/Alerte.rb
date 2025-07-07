@@ -124,7 +124,7 @@ class Alertes::Alerte
       else
         # Il peut n'y avoir que l'heure
         n = Time.now
-        "#{n.year}-#{n.month}-#{n.day} #{hd}" 
+        "#{n.year}-#{n.month.to2}-#{n.day.to2} #{hd.to8}"
       end
     end
   end

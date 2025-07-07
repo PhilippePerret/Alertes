@@ -27,8 +27,13 @@ class Integer
       "  #{m}:#{r}"
     end
   end
+  def to8; self.to_s.to8 end # "0:12:23" => "00:12:23"
+  def to2; self.to_s.to2 end # 2 => "02", 10 => "10"
 end
 class String
+
+  def to8; self.rjust(8,'0') end
+  def to2; self.rjust(2,'0') end
 
   def to_full_horloge(no_seconde: false)
     if :no_seconde
@@ -78,18 +83,16 @@ class String
     date, horloge = self.split(' ')
     date, horloge = [horloge, date] if date.match?(/\:/)
 
-    heures, minutes, secondes = (horloge||"").split(':').map{|s| s.strip.rjust(2,'0')}
-    heures    = (heures  || now.hour.to_s).rjust(2,'0')
-    minutes   = (minutes || now.min.to_s).rjust(2,'0')
-    secondes  = (secondes||= "0").rjust(2,'0')
+    heures, minutes, secondes = (horloge||"").split(':').map{|s| s.strip.to2}
+    heures    = (heures  || now.hour).to2
+    minutes   = (minutes || now.min).to2
+    secondes  = (secondes||= "0").to2
 
     jour, mois, annee = (date||"").split(/[\-\/]/).reverse
     annee ||= now.year.to_s
     annee = "20#{annee}" if annee.length == 2
-    mois  ||= now.month
-    mois = mois.to_s.rjust(2, '0')
-    jour  ||= now.day
-    jour = jour.to_s.rjust(2, "0")
+    mois = (mois || now.month).to2
+    jour  = (jour || now.day).to2
     "#{annee}-#{mois}-#{jour} #{heures}:#{minutes}:#{secondes}"
   end
 end
