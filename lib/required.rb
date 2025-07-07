@@ -1,3 +1,5 @@
 require 'clir'
 require 'yaml'
-require 'ruby2d'
+
+class Alertes; end
+Dir["#{__dir__}/first_classes/*.rb"].each{|m| require m}
