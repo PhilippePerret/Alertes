@@ -8,8 +8,8 @@ class Integer
     r = self - h * 3600
     m = r / 60 ; 
     r = r - m * 60
-    m = m > 10 ? m : "0#{m}"
-    r = r > 10 ? r : "0#{r}"
+    m = m < 10 ? "0#{m}" : m
+    r = r < 10 ? "0#{r}" : r
     if h > 0
       "#{h}:#{m}:#{r}"
     else
@@ -18,8 +18,21 @@ class Integer
   end
 end
 class String
+
+  def to_minutes
+    if self.match?(/[,\:]/)
+      secondes, minutes, heures = self.split(/[,\:]/).map{|s|s.strip.to_i}.reverse
+      minutes ||= 0
+      heures  ||= 0
+      secondes / 60 + minutes + heures * 60
+    else
+      self.to_i
+    end
+  end
+
   REG_TIME1 = /(\d{4})\/(\d{2})\/(\d{2}) (\d{2})\:(\d{2})\:(\d{2})/.freeze
   REG_TIME2 = /(\d{4})\-(\d{2})\-(\d{2}) (\d{2})\:(\d{2})\:(\d{2})/.freeze
+
   def as_time
     self.match?(REG_TIME1) || self.match?(REG_TIME2) || begin
       raise "Temps #{self} mal défini. Il faut 'AAAA-MM-JJ HH:MM:SS'"

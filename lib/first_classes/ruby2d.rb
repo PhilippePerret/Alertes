@@ -5,6 +5,12 @@ module Ruby2D
       @text_blocs ||= []
       @text_blocs << btext
     end
+    # Met la couleur de tous les textes à +color+
+    # Rappel : chaque ligne de texte est un bloc différent, même
+    # si le texte se suit.
+    def set_color_texts(color)
+      @text_blocs.each {|tb| tb.color = color }
+    end
     def remove_all_text_blocs
       return if @text_blocs.nil? || @text_blocs.empty?
       @text_blocs.each {|tb| remove(tb)}
@@ -74,7 +80,7 @@ class Ruby2DClass
 
     # Le compteur
     noirc = Ruby2D::Color.new([0.3,0.3,0.3,1])
-    bcompteur = Ruby2D::Text.new("0:00:00", size: 48, x: WIDTH - 300, y: 10, color: noirc, font: "resources/fonts/Courier.ttf")
+    bcompteur = Ruby2D::Text.new("0:00:00", size: 48, x: WIDTH - 260, y: 10, color: noirc, font: "resources/fonts/Courier.ttf")
     window.add(bcompteur)
 
     window.on :key_down do |ev|
@@ -116,26 +122,26 @@ class Ruby2DClass
       else puts "Vous avez pressé la touche #{ev.key}"
       end
     end
-    @countdown = alerte.duration
+    @countdown = alerte.duration * 60
     window.update do # boucle toutes les secondes
       @countdown -= 1 unless @stop_counter
       if @countdown % 5 == 0
         bcompteur.text = @countdown.to_horloge
       end
-      if @countdown < -60
-        window.close
-      elsif @countdown <= 0
-        btext.text = "On est arrivé au bout."
-        btext.color = 'white'
-        @rect.color = Ruby2D::Color.new([1,0,0,1])
+      if @countdown < 0 && @countdown > 10
+        set_fond(Ruby2D::Color.new([1,0,0,1]), 'white')
       elsif @countdown <= 60
-        @rect.color = 'orange'
-        btext.color = 'white'
+        set_fond('orange', 'white')
       end
     end
 
     window.show
 
+  end
+
+  def set_fond(couleur, couleur_textes = 'black')
+    @rect.color = couleur
+    window.set_color_texts(couleur_textes)
   end
 
   # Écris le texte +texte+ dans la fenêtre +window+

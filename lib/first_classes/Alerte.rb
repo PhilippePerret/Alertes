@@ -20,14 +20,37 @@ class Alertes::Alerte
   # === C L A S S E ====
   class << self
 
-  end #/class << self
-  
+    # Méthode appelée pour définir une alerte et la lancer
+    def define_and_run
+      data_alerte = define_data_alerte || return
+      alerte = new(data_alerte)
+      alerte.run
+    end
+
+    def define_data_alerte
+      content = duration = deadline = nil
+      content = Q.ask("Texte de l'alerte".jaune)
+      case Q.select("Que veux-tu programmer ?".jaune, [{name: "La durée du travail", value: :duration}, {name: "L’échéance de travail", value: :deadline}])
+      when :duration
+        hduration = Q.ask("Durée en minutes (horloge possible)".jaune)
+        duration = hduration.to_minutes
+        puts "duration = #{duration.inspect}"
+      when :deadline
+        hdeadline = Q.ask("Heure d’échéance (H:MM)".jaune)
+        deadline = hdeadline.fill_in_as_time
+        puts "deadline = #{deadline.inspect}"
+      end
+
+      {content: content, duration: duration, deadline: deadline}
+    end
+
+  end #/class << self  
   # === I N S T A N C E ===
 
   attr_reader :content, :deadline, :folder, :script
   def duration
     if deadline?
-      (deadline.as_time - Time.now).round
+      ((deadline.as_time - Time.now).round / 60).round
     else
       @duration
     end
