@@ -1,0 +1,9 @@
+#!/usr/bin/env zsh
+
+# DIR="$(cd "$(dirname "$0")" && pwd)"
+APP_FOLDER="$(cd "$(dirname "$0")/.." && pwd)"
+echo $APP_FOLDER
+
+cd $APP_FOLDER
+bundle exec ruby alertes.rb
+
