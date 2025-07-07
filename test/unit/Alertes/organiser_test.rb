@@ -52,6 +52,31 @@ class AlertesOrganiserTest < Test::Unit::TestCase
     assert( alertes_sorted[2] == alertes[2])
   end
 
+  test "retire les tâches des jours précédents" do
+    ale = [
+      new_alerte("Échéance trop vieille", 30, in_(-1, :day)),
+      new_alerte("Tâche du jour", 60, nil)
+    ]
+    sor = Alertes.organiser(alertes, {interactive: false})
+
+    assert(sor.count == 1)
+    assert(sor[0].id == ale[1])
+  end
+
+  test "retire les tâches des jours suivants" do
+    ale = [
+      new_alerte("Tâche future", 30, in_(2, :day)),
+      new_alerte("Tâche du jour", 60, nil),
+      new_alerte("Autre tâche future", 30, in_(1, :day)),
+      new_alerte("Autre tâche du jour", 60, nil)
+    ]
+    sor = Alertes.organiser(alertes, {interactive: false})
+
+    assert(sor.count == 2)
+    assert(sor[0].id == ale[1])
+    assert(sor[1].id == ale[4])
+  end
+
   test "traite une liste avec bonnes échéances" do
     alertes = [
       new_alerte("Échéance de fin", 30, in_(4, :hour)),
