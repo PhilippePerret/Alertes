@@ -14,12 +14,27 @@ module Ruby2D
 end
 
 class Ruby2DClass
-  attr_reader :window
+  
+  attr_reader :window, :alerte
+
   require 'ruby2d'
   include Ruby2D
-  WIDTH  = 800
-  HEIGHT = 600
+  WIDTH       = 800
+  HEIGHT      = 600
   NORMAL_FONT = "resources/fonts/NunitoSans.ttf"
+  LEFT_MARG   = 20
+
+  def initialize(alerte)
+    @alerte = alerte
+  end
+
+  def info(msg)
+    @binfo.text = msg
+  end
+  def ask(msg)
+    write(msg, window, 'blue')
+  end
+
   def open
     @window = Ruby2D::Window.new
     window.set(title: "Alertes", 
@@ -35,15 +50,27 @@ class Ruby2DClass
     window.add(@rect)
 
     # Pour l'aide
+    aides = %w([S]stop [N]ext [P]revious)
+    aides << "[O]pen" if alerte.folder
+    aides << "[X]run script" if alerte.script
+    aides += %w([Q]uitter [H]elp)
     baide = Ruby2D::Text.new(
-      "[S]top [N]ext [P]revious [Q]uitter [R]un the task [H]elp",
+      aides.join(' '),
       x: 100, y: HEIGHT - 30, color: 'gray', font: NORMAL_FONT, z: 10
     )
     window.add(baide)
+    
+    # Pour les informations
+    @binfo = Ruby2D::Text.new(
+      "---", x: LEFT_MARG, y: HEIGHT - 60, color: 'blue', font: NORMAL_FONT, size: 20
+    )
+    window.add(@binfo)
 
-    # Pour les messages
-    tache = "C'est mon premier message avec ruby2d. Je vais volontairement un long message pour voir comment il va se comporter par rapport à la fenêtre entière."
+    # Pour les textes principaux (la tâche par exemple)
+    tache = alerte.content
     write(tache, window)
+
+
 
     # Le compteur
     noirc = Ruby2D::Color.new([0.3,0.3,0.3,1])
@@ -52,41 +79,56 @@ class Ruby2DClass
 
     window.on :key_down do |ev|
       case ev.key
-      when 'o', 'O', 'return', 'space' then
+      when 'o'
+        @next_operation = -> { info alerte.open_folder }
+        ask("Voulez-vous ouvrir le dossier de l’alerte ?")
+      when 'x'
+        @next_operation = -> { info alerte.run_script }
+        ask("Voulez-vous jouer le script de l’alerte ?")
+      when 'return', 'space' then
         if @next_operation
           @next_operation.call
           @next_operation = nil
+          write(tache, window)
         end
       when 'escape'
         @next_operation = nil
         write(tache, window)
       when 'a', 'A' then 
-        write("Vous voulez quitter le programme ? (o/esc)", window)
+        ask("Vous voulez quitter le programme ? (return/esc)")
         @next_operation = -> { window.close }
-      when 's', 'S' then write("Vous voulez faire une pause ? (o/esc)", window)
-        @next_operation = -> { @stop_counter = true; write("Frappez 'R' quand vous voudrez reprendre", window) }
-      when 'r', 'R' then write("Vous voulez reprendre ? (o/esc)", window)
-        @next_operation = -> { @stop_counter = false; write(tache, window) }
+      when 's', 'S' then ask("Vous voulez faire une pause ? (return/esc)")
+        @next_operation = -> { @stop_counter = true; ask("Frappez 'R' quand vous voudrez reprendre") }
+      when 'r', 'R' then ask("Vous voulez reprendre ? (return/esc)")
+        @next_operation = -> do 
+          @stop_counter = false
+          if alerte.deadline?
+            @countdown = alerte.duration_refreshed
+            msg = "La durée a été recalculée en fonction de l’échéance définie."
+            info(msg)
+          end
+          write(tache, window)
+        end
       when 'p', 'P' then 
-        write("Vous voulez revenir à la précédente ? (o/esc)", window)
+        ask("Vous voulez revenir à la précédente ? (return/esc)")
       when 'n', 'N' then 
-        write("Vous voulez passer à la suivante ? (o/esc)", window)
+        ask("Vous voulez passer à la suivante ? (return/esc)")
       else puts "Vous avez pressé la touche #{ev.key}"
       end
     end
-    counter = 0
-    countdown = 100
+    @countdown = alerte.duration
     window.update do # boucle toutes les secondes
-      counter += 1
-      countdown -= 1 unless @stop_counter
-      bcompteur.text = countdown.to_horloge
-      if countdown < -60
+      @countdown -= 1 unless @stop_counter
+      if @countdown % 5 == 0
+        bcompteur.text = @countdown.to_horloge
+      end
+      if @countdown < -60
         window.close
-      elsif countdown <= 0
+      elsif @countdown <= 0
         btext.text = "On est arrivé au bout."
         btext.color = 'white'
         @rect.color = Ruby2D::Color.new([1,0,0,1])
-      elsif countdown <= 60
+      elsif @countdown <= 60
         @rect.color = 'orange'
         btext.color = 'white'
       end
@@ -99,9 +141,9 @@ class Ruby2DClass
   # Écris le texte +texte+ dans la fenêtre +window+
   # (en tenant compte du fait qu'on ne peut pas enrouler du texte
   #  avec Ruby2D, donc il faut créer des lignes successives)
-  def write(texte, window)
+  def write(texte, window, color = 'black')
     window.remove_all_text_blocs
-    text_props = {size: 20, x: 10, y: 80, color: 'black', font: NORMAL_FONT}
+    text_props = {size: 20, x: LEFT_MARG, y: 80, color: color, font: NORMAL_FONT}
     btext = Ruby2D::Text.new("", **text_props)
     window.add_text_bloc(btext)
     window.add(btext)
