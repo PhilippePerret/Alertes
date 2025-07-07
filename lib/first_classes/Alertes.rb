@@ -26,22 +26,19 @@ class << self
     when nil then return
     when :save
       toutes_les_alertes = read_alertes + new_alertes
-      puts "toutes_les_alertes: #{toutes_les_alertes}"
-      YAML.dump(toutes_les_alertes, IO.open(data_path, 'w'))
+      YAML.dump(toutes_les_alertes, File.open(data_path, 'w'))
     when :now
       jouer_alertes(new_alertes)
     end    
   end
 
   def jouer_alertes(alertes)
-    alertes    
-    .each do |dalerte|
-      # TODO : NON, ÇA N'EST PAS DU TOUT COMME ÇA QU'IL FAUT FAIRE
-      # Il faut regarder quand l'alerte doit être lancée et la
-      # programmer pour ce temps là.
-      Alerte.new(dalerte).run
-      break
-    end
+    @all_alertes = Marshal.load(Marshal.dump(alertes))
+    jouer_next_alerte()
+  end
+  def jouer_next_alerte
+    dalerte = @all_alertes.shift || return # fin
+    Alerte.new(dalerte).run
   end
 
   def lancer_alertes_programmed
@@ -50,14 +47,14 @@ class << self
 
   def read_alertes
     if File.exist?(data_path)
-      YAML.save_load(IO.read(data_path), **YAML_OPTIONS)
+      YAML.safe_load(IO.read(data_path), **YAML_OPTIONS)
     else
       []
     end
   end
 
   def data_path
-    @data_path ||= File.join(APP_FOLDER, 'data.yaml')
+    @data_path ||= File.join(APP_FOLDER, 'alertes.yaml')
   end
 
   def choices

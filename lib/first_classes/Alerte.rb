@@ -20,24 +20,42 @@ class Alertes::Alerte
   # === C L A S S E ====
   class << self
 
+    # Méthode appelée par une alerte pour la lancer
+    def run(alerte)
+      if @rdd.nil?
+        @rdd = Ruby2DClass.new()
+        @rdd.open(alerte)
+      else
+        @rdd.run(alerte)
+      end
+    end
+
+
     # Méthode appelée pour définir une alerte et la lancer
     def define_and_run
       data_alerte = define_data_alerte || return
       alerte = new(data_alerte)
-      alerte.run
+      self.class.run(alerte)
     end
 
     def define_data_alerte(params = {})
       clear 
       puts "Définition d'une nouvelle alerte\n".bleu
-      
+
       content = duration = deadline = headline = nil
-      content = Q.ask("Texte de l'alerte".jaune)
+      content = Q.ask("Texte de l'alerte : ".jaune)
 
       # Pour des données complètes
       if params[:headline]
-        hheadline = Q.ask("Date et heure de début de l’alerte".jaune)
-        headline = hheadline.fill_in_as_time
+        case Q.select("Tâche ponctuelle ou répétée ?".jaune, [{name: "Ponctuelle (un jour précis)", value: :ponct}, {name: "Répétée", value: :reccur}])
+        when :reccur
+          hheadline = Q.ask("À quelle heure ? (horloge H:MM:SS ou H,MM,SS)".jaune)
+          headline = hheadline.to_full_horloge
+        when :ponct
+          hheadline = Q.ask("Date et heure de début de l’alerte (p.e. 12 10:30 : ".jaune)
+          headline = hheadline.fill_in_as_time
+        end
+        puts "headline: #{headline.inspect}".bleu
       end
 
       case Q.select("Que veux-tu programmer ?".jaune, [{name: "La durée du travail", value: :duration}, {name: "L’échéance de travail", value: :deadline}])
@@ -73,12 +91,10 @@ class Alertes::Alerte
     @script   = data[:script]
   end
 
-  # Pour lancer la tâche
+  # Pour lancer la tâche et la fenêtre
   def run
-    rdd = Ruby2DClass.new(self)
-    rdd.open
+    self.class.run(self)
   end
-
   def deadline?; !@deadline.nil? end
 
   def deadline_time

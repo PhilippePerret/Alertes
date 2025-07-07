@@ -19,6 +19,13 @@ class Integer
 end
 class String
 
+  def to_full_horloge
+    secondes, minutes, heures = self.split(/[,\:]/).map{|s|s.strip.to_i}.reverse
+    minutes ||= 0
+    heures  ||= 0
+    "#{heures}:#{minutes.to_s.rjust(2,'0')}:#{secondes.to_s.rjust(2,'0')}"
+  end
+  
   def to_minutes
     if self.match?(/[,\:]/)
       secondes, minutes, heures = self.split(/[,\:]/).map{|s|s.strip.to_i}.reverse

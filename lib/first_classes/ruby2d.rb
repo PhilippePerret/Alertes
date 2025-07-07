@@ -21,7 +21,7 @@ end
 
 class Ruby2DClass
   
-  attr_reader :window, :alerte
+  attr_reader :window, :alerte, :tache
 
   require 'ruby2d'
   include Ruby2D
@@ -30,10 +30,6 @@ class Ruby2DClass
   NORMAL_FONT = "resources/fonts/NunitoSans.ttf"
   LEFT_MARG   = 20
 
-  def initialize(alerte)
-    @alerte = alerte
-  end
-
   def info(msg)
     @binfo.text = msg
   end
@@ -41,7 +37,21 @@ class Ruby2DClass
     write(msg, window, 'blue')
   end
 
-  def open
+  # Définit l'aide en fonction de l'alerte courante
+  def set_aide
+    window.remove(@baide) if @baide
+    aides = %w([F]inie (suivante) [S]stop [N]ext [P]revious)
+    aides << "[O]pen" if alerte.folder
+    aides << "[X]run script" if alerte.script
+    aides += %w([Q]uitter [H]elp)
+    @baide = Ruby2D::Text.new(
+      aides.join(' '),
+      x: 100, y: HEIGHT - 30, color: 'gray', font: NORMAL_FONT, z: 10
+    )
+    window.add(@baide)
+  end
+
+  def open(alerte)
     @window = Ruby2D::Window.new
     window.set(title: "Alertes", 
       width: WIDTH, 
@@ -54,17 +64,6 @@ class Ruby2DClass
     # Pour le fond
     @rect = Rectangle.new(x: 0, y: 0, width: WIDTH, height: HEIGHT, color: 'white', z: 0)
     window.add(@rect)
-
-    # Pour l'aide
-    aides = %w([S]stop [N]ext [P]revious)
-    aides << "[O]pen" if alerte.folder
-    aides << "[X]run script" if alerte.script
-    aides += %w([Q]uitter [H]elp)
-    baide = Ruby2D::Text.new(
-      aides.join(' '),
-      x: 100, y: HEIGHT - 30, color: 'gray', font: NORMAL_FONT, z: 10
-    )
-    window.add(baide)
     
     # Pour les informations
     @binfo = Ruby2D::Text.new(
@@ -72,16 +71,10 @@ class Ruby2DClass
     )
     window.add(@binfo)
 
-    # Pour les textes principaux (la tâche par exemple)
-    tache = alerte.content
-    write(tache, window)
-
-
-
     # Le compteur
     noirc = Ruby2D::Color.new([0.3,0.3,0.3,1])
-    bcompteur = Ruby2D::Text.new("0:00:00", size: 48, x: WIDTH - 260, y: 10, color: noirc, font: "resources/fonts/Courier.ttf")
-    window.add(bcompteur)
+    @bcompteur = Ruby2D::Text.new("0:00:00", size: 48, x: WIDTH - 260, y: 10, color: noirc, font: "resources/fonts/Courier.ttf")
+    window.add(@bcompteur)
 
     window.on :key_down do |ev|
       case ev.key
@@ -103,15 +96,21 @@ class Ruby2DClass
       when 'a', 'A' then 
         ask("Vous voulez quitter le programme ? (return/esc)")
         @next_operation = -> { window.close }
+      when 'f', 'F', 'N', 'n'
+        ask("Voulez-vous passer à l’alerte/tâche suivante ? (return/esc)")
+        @next_operation = -> { Alertes.jouer_next_alerte }
       when 's', 'S' then ask("Vous voulez faire une pause ? (return/esc)")
-        @next_operation = -> { @stop_counter = true; ask("Frappez 'R' quand vous voudrez reprendre") }
-      when 'r', 'R' then ask("Vous voulez reprendre ? (return/esc)")
-        @next_operation = -> do 
+        @next_operation = -> { @stop_counter = true; info("Frappez 'R' quand vous voudrez reprendre") }
+      when 'r', 'R' then 
+        ask("Vous voulez reprendre ? (return/esc)")
+        @next_operation = -> do
           @stop_counter = false
           if alerte.deadline?
             @countdown = alerte.duration_refreshed
             msg = "La durée a été recalculée en fonction de l’échéance définie."
             info(msg)
+          else
+            info("")
           end
           write(tache, window)
         end
@@ -122,11 +121,33 @@ class Ruby2DClass
       else puts "Vous avez pressé la touche #{ev.key}"
       end
     end
+
+    run(alerte)
+
+    window.show
+
+   end #/open
+
+  def run(alerte)
+
+    @alerte = alerte
+    # Pour l'aide (qui dépend de chaque tâche)
+    set_aide
+
+    # Pour les textes principaux (la tâche par exemple)
+    @tache = alerte.content
+    write(tache, window)
+
     @countdown = alerte.duration * 60
+    @bcompteur.text = @countdown.to_horloge
+    precount = 0
     window.update do # boucle toutes les secondes
       @countdown -= 1 unless @stop_counter
-      if @countdown % 5 == 0
-        bcompteur.text = @countdown.to_horloge
+      if precount < 5
+        @bcompteur.text = @countdown.to_horloge
+        precount += 1
+      elsif @countdown % 5 == 0
+        @bcompteur.text = @countdown.to_horloge
       end
       if @countdown < 0 && @countdown > -10
         set_fond(Ruby2D::Color.new([1,0,0,1]), 'white')
@@ -134,9 +155,6 @@ class Ruby2DClass
         set_fond('orange', 'white')
       end
     end
-
-    window.show
-
   end
 
   def set_fond(couleur, couleur_textes = 'black')

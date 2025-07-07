@@ -1,0 +1,9 @@
+---
+- :content: Première qui dure 2 minutes.
+  :duration: 2
+  :deadline:
+  :headline: '2025-07-08 16:00:00'
+- :content: Une récurrente à 10 heures 30.
+  :duration: 3
+  :deadline:
+  :headline: '0:10:30'
