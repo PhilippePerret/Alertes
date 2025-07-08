@@ -128,9 +128,6 @@ class Ruby2DClass
 
   def run(alerte)
 
-    # On repasse toujours en blanc
-    set_fond('white', 'black')
-
     @alerte = alerte
     # Pour l'aide (qui dépend de chaque tâche)
     set_aide
@@ -138,6 +135,9 @@ class Ruby2DClass
     # Pour les textes principaux (la tâche par exemple)
     @tache = alerte.content
     write(tache, window)
+
+    # On repasse toujours en blanc
+    set_fond('white', 'black')
 
     @countdown = alerte.duration * 60
     @bcompteur.text = @countdown.to_horloge
