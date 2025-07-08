@@ -128,6 +128,9 @@ class Ruby2DClass
 
   def run(alerte)
 
+    # On repasse toujours en blanc
+    set_fond('white', 'black')
+
     @alerte = alerte
     # Pour l'aide (qui dépend de chaque tâche)
     set_aide
