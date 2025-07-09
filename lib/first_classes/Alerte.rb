@@ -12,6 +12,8 @@ PROPRIÉTÉS
   :deadline   La tâche doit s'arrêter à cette heure-là. C'est une
               horloge.
   :folder     Le dossier éventuellement à ouvrir
+  :open_with  Dans quoi il faut ouvrir le dossier (:folder). 
+              possibilités : 'Finder', 'VSCode', 'both' (les deux)
   :script     Le script éventuellement à lancer au début de la
               tâche.
 
@@ -78,7 +80,7 @@ class Alertes::Alerte
   attr_accessor :id
 
   attr_reader :data
-  attr_reader :content, :folder, :script
+  attr_reader :content, :folder, :open_with, :script
   def duration
     if deadline?
       ((deadline.as_time - Time.now).round / 60).round
@@ -94,10 +96,11 @@ class Alertes::Alerte
 
   def initialize(data)
     @data = data
-    @duration = data[:duration]
-    @content  = data[:content]
-    @folder   = data[:folder]
-    @script   = data[:script]
+    @duration   = data[:duration]
+    @content    = data[:content]
+    @folder     = data[:folder]
+    @script     = data[:script]
+    @open_with  = data[:open_with]
   end
 
   # Pour lancer la tâche et la fenêtre
@@ -155,7 +158,15 @@ class Alertes::Alerte
     if folder.nil?
       return "Pas de dossier stipulé"
     elsif File.exist?(folder)
-      `open -a Finder "#{folder}"`
+      case open_with
+      when  nil, 'Finder'
+        `open -a Finder "#{folder}"`
+      when 'VSCode'
+        `code "#{folder}"`
+      when 'both'
+        `open -a Finder "#{folder}"`
+        `code "#{folder}"`
+      end
       return "Dossier ouvert dans le Finder"
     else
       return "Le dossier #{folder.inspect} est introuvable…"
