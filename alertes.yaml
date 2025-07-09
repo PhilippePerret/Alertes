@@ -3,12 +3,14 @@
   :duration: 90
   :deadline:
   :headline: '9:00:00'
+  :folder:    "/Users/philippeperret/Programmes/Phoenix/LdQ/ldq-v2"
+  :open_with: "VSCode"
 - :content: Travailler sur le Grand Dictionnaire du Scénario.
   :duration: 90
   :deadline:
   :headline: '7:00:00'
-  :folder:    "/Users/philippeperret/Programmes/Phoenix/LdQ/ldq-v2"
   :open_with: "VSCode"
+  :folder:    "/Users/philippeperret/ICARE_EDITIONS/_LIVRES_/Narration/Dictionnaire/Version-Prawn-for-book"
 - :content: Sport
   :duration: 60
   :deadline:

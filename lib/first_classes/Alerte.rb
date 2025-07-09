@@ -161,13 +161,15 @@ class Alertes::Alerte
       case open_with
       when  nil, 'Finder'
         `open -a Finder "#{folder}"`
+        return "Dossier ouvert dans le Finder"
       when 'VSCode'
         `code "#{folder}"`
+        return "Dossier ouvert dans VSCode"
       when 'both'
         `open -a Finder "#{folder}"`
         `code "#{folder}"`
+        return "Dossier ouvert dans VSCode et le Finder"
       end
-      return "Dossier ouvert dans le Finder"
     else
       return "Le dossier #{folder.inspect} est introuvable…"
     end
