@@ -39,12 +39,18 @@ class << self
     if @all_alertes.count > 1
       @all_alertes = organiser(@all_alertes)
     end
-
     jouer_next_alerte()
   end
   def jouer_next_alerte
     alerte = @all_alertes.shift || return # fin
+    # puts "alerte: #{alerte.inspect}"
     alerte.run
+  end
+
+  # Pour mettre l'+alerte+ après la première (première qui sera
+  # certainement jouée juste maintenant)
+  def set_after_first_alert(alerte)
+    @all_alertes.insert(1, alerte)
   end
 
   def lancer_alertes_programmed

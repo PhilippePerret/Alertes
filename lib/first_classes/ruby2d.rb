@@ -1,6 +1,7 @@
 
 module Ruby2D
   class Window
+    attr_reader :text_blocs
     def add_text_bloc(btext)
       @text_blocs ||= []
       @text_blocs << btext
@@ -33,8 +34,16 @@ class Ruby2DClass
   def info(msg)
     @binfo.text = msg
   end
+
   def ask(msg)
-    write(msg, window, 'blue')
+    write(msg + ' (return/esc)', color: 'blue')
+  end
+  def ask_with_choices(msg, choices)
+    write(msg, color: 'blue')
+    choices.each_with_index do |choix, i|
+      write("#{i + 1}: #{choix[0]}", color: 'blue', keep: true)
+    end
+    @choices = choices
   end
 
   # Définit l'aide en fonction de l'alerte courante
@@ -78,6 +87,16 @@ class Ruby2DClass
 
     window.on :key_down do |ev|
       case ev.key
+      when '1', 'keypad 1'
+        exec_choix(1)
+      when '2', 'keypad 2'
+        exec_choix(2)
+      when '3', 'keypad 3'
+        exec_choix(3)
+      when '4', 'keypad 4'
+        exec_choix(4)
+      when '5', 'keypad 5'
+        exec_choix(5)
       when 'o'
         @next_operation = -> { info alerte.open_folder }
         ask("Voulez-vous ouvrir le dossier de l’alerte ?")
@@ -86,23 +105,34 @@ class Ruby2DClass
         ask("Voulez-vous jouer le script de l’alerte ?")
       when 'return', 'space' then
         if @next_operation
-          @next_operation.call
-          @next_operation = nil
-          write(tache, window)
+          run_next_operation
+          # write(tache)
         end
+        run_ensure_operation if @ensure_operation
       when 'escape'
         @next_operation = nil
-        write(tache, window)
+        if @ensure_operation
+          run_ensure_operation
+        else
+          write(tache)
+        end
       when 'a', 'A' then 
-        ask("Vous voulez quitter le programme ? (return/esc)")
+        ask("Vous voulez quitter le programme ?")
         @next_operation = -> { window.close }
-      when 'f', 'F', 'N', 'n'
-        ask("Voulez-vous passer à l’alerte/tâche suivante ? (return/esc)")
+      when 'f', 'F'
+        ask("Cette tâche est-elle vraiment finie ?")
         @next_operation = -> { Alertes.jouer_next_alerte }
-      when 's', 'S' then ask("Vous voulez faire une pause ? (return/esc)")
+      when 'N', 'n'
+        ask_with_choices("Voulez-vous passer à l’alerte/tâche suivante ?",
+        [
+          ["oui, en passant cette tâche après", -> {Alertes.set_after_first_alert(alerte); Alertes.jouer_next_alerte}], 
+          ["oui, en retirant cette tâche", -> { Alertes.jouer_next_alerte }], 
+          ["non, renoncer", -> { write(tache) } ]
+        ])
+      when 's', 'S' then ask("Vous voulez faire une pause ?")
         @next_operation = -> { @stop_counter = true; info("Frappez 'R' quand vous voudrez reprendre") }
       when 'r', 'R' then 
-        ask("Vous voulez reprendre ? (return/esc)")
+        ask("Vous voulez reprendre ?")
         @next_operation = -> do
           @stop_counter = false
           if alerte.deadline?
@@ -112,10 +142,10 @@ class Ruby2DClass
           else
             info("")
           end
-          write(tache, window)
+          write(tache)
         end
       when 'p', 'P' then 
-        ask("Vous voulez revenir à la précédente ? (return/esc)")
+        ask("Vous voulez revenir à la précédente ?")
       else puts "Vous avez pressé la touche #{ev.key}"
       end
     end
@@ -126,6 +156,25 @@ class Ruby2DClass
 
   end #/open
 
+  def exec_choix(indice)
+    unless @choices.nil?
+      choix = @choices[indice - 1]
+      puts "choix: #{choix}" 
+      # => ["message", <procédure>]
+      choix[1].call unless choix.nil?
+      @choices = nil
+    end
+  end
+
+  def run_ensure_operation
+    @ensure_operation.call
+    @ensure_operation = nil
+  end
+  def run_next_operation
+    @next_operation.call
+    @next_operation = nil
+  end
+
   def run(alerte)
 
     @alerte = alerte
@@ -134,7 +183,7 @@ class Ruby2DClass
 
     # Pour les textes principaux (la tâche par exemple)
     @tache = alerte.content
-    write(tache, window)
+    write(tache)
 
     # On repasse toujours en blanc
     set_fond('white', 'black')
@@ -169,9 +218,21 @@ class Ruby2DClass
   # Écris le texte +texte+ dans la fenêtre +window+
   # (en tenant compte du fait qu'on ne peut pas enrouler du texte
   #  avec Ruby2D, donc il faut créer des lignes successives)
-  def write(texte, window, color = 'black')
-    window.remove_all_text_blocs
-    text_props = {size: 20, x: LEFT_MARG, y: 80, color: color, font: NORMAL_FONT}
+  def write(texte, options = {})
+    # puts "TEXTE = #{texte.inspect}"
+    # puts "OPTIONS = #{options.inspect}"
+    # puts "text_blocs = #{(window.text_blocs||[]).count} élément(s)"
+    window = @window
+    text_blocs = window.text_blocs
+    color = options[:color] || 'black'
+    top = 
+      unless options[:keep]
+        window.remove_all_text_blocs
+        80
+      else
+        80 + (text_blocs||[]).count * 24
+      end
+    text_props = {size: 20, x: LEFT_MARG, y: top, color: color, font: NORMAL_FONT}
     btext = Ruby2D::Text.new("", **text_props)
     window.add_text_bloc(btext)
     window.add(btext)
@@ -190,6 +251,7 @@ class Ruby2DClass
       window.add(btext)
       bloc = ""
     end
+    # puts "text_blocs à la fin = #{window.text_blocs.count} élément(s)"
   end
 
 end
