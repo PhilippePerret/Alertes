@@ -47,6 +47,14 @@ class << self
     alerte.run
   end
 
+  # @return True si on est en inactivité depuis une minute
+  def inactivite?
+    idle_time = IO.popen(['ioreg', '-c', 'IOHIDSystem']) do |io|
+      io.read[/HIDIdleTime" = (\d+)/, 1].to_i / 1_000_000_000
+    end
+    idle_time > 60
+  end
+
   # Pour mettre l'+alerte+ après la première (première qui sera
   # certainement jouée juste maintenant)
   def set_after_first_alert(alerte)

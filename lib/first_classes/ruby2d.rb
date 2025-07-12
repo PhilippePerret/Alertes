@@ -30,13 +30,14 @@ class Ruby2DClass
   HEIGHT      = 600
   NORMAL_FONT = "resources/fonts/NunitoSans.ttf"
   LEFT_MARG   = 20
+  FOND_ROUGE  = Ruby2D::Color.new([1,0,0,1])
 
   def info(msg)
     @binfo.text = msg
   end
 
   def ask(msg)
-    write(msg + ' (return/esc)', color: 'blue')
+    write(msg + ' (ok: return, no: esc)', color: 'blue')
   end
   def ask_with_choices(msg, choices)
     write(msg, color: 'blue')
@@ -98,7 +99,10 @@ class Ruby2DClass
       when '5', 'keypad 5'
         exec_choix(5)
       when 'o'
-        @next_operation = -> { info alerte.open_folder }
+        @next_operation = -> { 
+          info alerte.open_folder 
+          write(tache)
+        }
         ask("Voulez-vous ouvrir le dossier de l’alerte ?")
       when 'x'
         @next_operation = -> { info alerte.run_script }
@@ -130,7 +134,10 @@ class Ruby2DClass
           ["non, renoncer", -> { write(tache) } ]
         ])
       when 's', 'S' then ask("Vous voulez faire une pause ?")
-        @next_operation = -> { @stop_counter = true; info("Frappez 'R' quand vous voudrez reprendre") }
+        @next_operation = -> { 
+          @stop_counter = true;
+          info("Frappez 'R' quand vous voudrez reprendre") 
+        }
       when 'r', 'R' then 
         ask("Vous voulez reprendre ?")
         @next_operation = -> do
@@ -142,6 +149,7 @@ class Ruby2DClass
           else
             info("")
           end
+          set_fond('white', 'black')
           write(tache)
         end
       when 'p', 'P' then 
@@ -159,7 +167,6 @@ class Ruby2DClass
   def exec_choix(indice)
     unless @choices.nil?
       choix = @choices[indice - 1]
-      puts "choix: #{choix}" 
       # => ["message", <procédure>]
       choix[1].call unless choix.nil?
       @choices = nil
@@ -192,20 +199,30 @@ class Ruby2DClass
     @bcompteur.text = @countdown.to_horloge
     precount = 0
     window.update do # boucle toutes les secondes
-      @countdown -= 1 unless @stop_counter
-      if precount < 5
-        @bcompteur.text = @countdown.to_horloge
-        precount += 1
-      elsif @countdown % 5 == 0
-        @bcompteur.text = @countdown.to_horloge
+      if Alertes.inactivite?
+        @stop_counter = true
+        set_fond('yellow', 'red')
+        write("Vous êtes resté plus d’une minute sans activité. J’arrête le compteur.", color: 'red')
+        info("Frappez 'R' quand vous voudrez reprendre")
       end
-      if @countdown < 0
-        if @countdown > -20
-          # Pour ne le faire que quelques fois
-          set_fond(Ruby2D::Color.new([1,0,0,1]), 'white')
+      if @stop_counter
+        next
+      else
+        @countdown -= 1 
+        if precount < 5
+          @bcompteur.text = @countdown.to_horloge
+          precount += 1
+        elsif @countdown % 5 == 0
+          @bcompteur.text = @countdown.to_horloge
         end
-      elsif @countdown <= 60
-        set_fond('orange', 'white')
+        if @countdown < 0
+          if @countdown > -20
+            # Pour ne le faire que quelques fois
+            set_fond(FOND_ROUGE, 'white')
+          end
+        elsif @countdown <= 60
+          set_fond('orange', 'white')
+        end
       end
     end
   end
