@@ -2,15 +2,21 @@
 - :content: Travailler sur les tests du site de Lecture de Qualité.
   :duration: 90
   :deadline:
-  :headline: '9:00:00'
+  :headline: '8:00:00'
   :folder:    "/Users/philippeperret/Programmes/Phoenix/LdQ/ldq-v2"
   :open_with: "VSCode"
 - :content: Travailler sur le Grand Dictionnaire du Scénario.
   :duration: 90
   :deadline:
-  :headline: '7:00:00'
+  :headline: '6:30:00'
   :open_with: "VSCode"
   :folder:    "/Users/philippeperret/ICARE_EDITIONS/_LIVRES_/Narration/Dictionnaire/Version-Prawn-for-book/dico-builder"
+- :content: Travailler sur Passé sous silence 
+  :duration: 90
+  :headline: '9:30:00'
+  :deadline: 
+  :open_with: "Finder"
+  :folder:    "/Users/philippeperret/ICARE_EDITIONS/_LIVRES_/Fictions/Passé sous silence/2. Amour de glace"
 - :content: Sport
   :duration: 60
   :deadline:

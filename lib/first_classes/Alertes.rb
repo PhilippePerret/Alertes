@@ -4,9 +4,10 @@ class << self
     clear
     case Q.select("Que voulez-vous faire ?".jaune, choices)
     when nil then return
-    when :ponct   then usage_ponctuel
-    when :program then programmer_des_alertes
-    when :file    then lancer_alertes_programmed
+    when :ponct     then usage_ponctuel
+    when :program   then programmer_des_alertes
+    when :file      then lancer_alertes_programmed
+    when :open_ide  then ouvrir_alertes_in_ide
     end
   end
 
@@ -61,8 +62,26 @@ class << self
     @all_alertes.insert(1, alerte)
   end
 
+  def ouvrir_alertes_in_ide
+    `code "#{APP_FOLDER}"`
+  end
+
   def lancer_alertes_programmed
-    jouer_alertes(read_alertes)
+    alertes = read_alertes
+    # Classement des tâches
+    if Q.yes?("Voulez-vous classer les tâches à jouer ?".jaune)
+      while true
+        clear
+        choices = alertes.map.with_index do |dalerte, i|
+          {name: dalerte[:content], value: i}
+        end << {name: "Finir".orange, value: nil}
+        choix = Q.select("Choisissez la tâche à faire remonter".jaune, choices)
+        choix || break # Aucun choix pour arrêter
+        tache = alertes.delete_at(choix)
+        alertes.insert(choix - 1, tache)
+      end
+    end
+    jouer_alertes(alertes)
   end
 
   def read_alertes
@@ -82,6 +101,7 @@ class << self
       {name: "Utilisation ponctuelle pour maintenant", value: :ponct},
       {name: "Enregistrer des alertes/tâches", value: :program},
       {name: "Lancer les alertes/tâches enregistrées", value: :file},
+      {name: "Ouvrir Alertes dans l'IDE", value: :open_ide},
       {name: "Ne rien faire".orange, value: nil}
     ]
   end
