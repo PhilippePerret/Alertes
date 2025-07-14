@@ -33,11 +33,11 @@ class << self
     end    
   end
 
-  def jouer_alertes(alertes)
+  def jouer_alertes(alertes, options = {})
     @all_alertes = 
       Marshal.load(Marshal.dump(alertes))
       .map{|data| Alerte.new(data)}
-    if @all_alertes.count > 1
+    if @all_alertes.count > 1 && !options[:keep_in_order]
       @all_alertes = organiser(@all_alertes)
     end
     jouer_next_alerte()
@@ -67,6 +67,7 @@ class << self
   end
 
   def lancer_alertes_programmed
+    options = {}
     alertes = read_alertes
     # Classement des tâches
     if Q.yes?("Voulez-vous classer les tâches à jouer ?".jaune)
@@ -80,8 +81,9 @@ class << self
         tache = alertes.delete_at(choix)
         alertes.insert(choix - 1, tache)
       end
+      options.store(:keep_in_order, true)
     end
-    jouer_alertes(alertes)
+    jouer_alertes(alertes, options)
   end
 
   def read_alertes
